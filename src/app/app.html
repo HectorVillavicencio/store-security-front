@@ -1,48 +1,50 @@
 <div class="min-h-screen bg-gray-100 font-sans">
   
-  <header class="bg-green-900 text-white shadow-xl">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-      <div class="text-yellow-400 font-black text-3xl italic tracking-tighter">STORE<span class="text-white">SECURITY</span></div>
-      <nav class="flex gap-4">
-        <button (click)="vistaActual.set('productos')" [class.bg-green-700]="vistaActual() === 'productos'" class="px-4 py-2 rounded font-bold uppercase text-xs transition-all hover:bg-green-800">📦 Productos</button>
-        <button (click)="vistaActual.set('maestros')" [class.bg-green-700]="vistaActual() === 'maestros'" class="px-4 py-2 rounded font-bold uppercase text-xs transition-all hover:bg-green-800">⚙️ Categorías</button>
-      </nav>
-    </div>
+  <header class="bg-green-900 text-white shadow-xl h-20 flex items-center px-8 justify-between sticky top-0 z-50">
+    <div class="text-yellow-400 font-black text-2xl italic">STORE<span class="text-white">SECURITY</span></div>
+    <nav class="flex gap-1">
+      <button (click)="vistaActual.set('productos')" [class.bg-green-700]="vistaActual()==='productos'" class="px-3 py-2 rounded font-bold text-[10px] uppercase">📦 Stock</button>
+      <button (click)="vistaActual.set('comprar')" [class.bg-green-700]="vistaActual()==='comprar'" class="px-3 py-2 rounded font-bold text-[10px] uppercase">🛒 Comprar</button>
+      <button (click)="vistaActual.set('ventas')" [class.bg-green-700]="vistaActual()==='ventas'" class="px-3 py-2 rounded font-bold text-[10px] uppercase">📄 Ventas</button>
+      <button (click)="vistaActual.set('maestros')" [class.bg-green-700]="vistaActual()==='maestros'" class="px-3 py-2 rounded font-bold text-[10px] uppercase">⚙️ Config</button>
+    </nav>
   </header>
 
-  <main class="p-8 max-w-7xl mx-auto">
-    
-    @if (vistaActual() === 'productos') {
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-black text-gray-800 uppercase italic">Inventario de Productos</h2>
-        <button (click)="abrirCrearProd()" class="bg-yellow-400 text-green-900 font-black px-6 py-2 rounded shadow hover:scale-105 transition-all uppercase text-xs">+ Nuevo Producto</button>
-      </div>
+  <main class="p-6 max-w-7xl mx-auto">
 
-      <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-        <table class="w-full">
-          <thead class="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold">
+    @if (vistaActual() === 'productos' || vistaActual() === 'comprar') {
+      <div class="mb-6 relative max-w-md">
+        <input [(ngModel)]="busqueda" placeholder="Buscar producto..." class="w-full pl-10 pr-4 py-2 rounded-xl border shadow-sm outline-none focus:border-green-600">
+        <span class="absolute left-3 top-2 text-gray-400">🔍</span>
+      </div>
+    }
+
+    @if (vistaActual() === 'productos') {
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-black text-gray-800 uppercase italic">Control de Stock</h2>
+        <button (click)="abrirCrearProd()" class="bg-yellow-400 text-green-900 font-black px-4 py-2 rounded text-[10px] uppercase shadow">+ Nuevo</button>
+      </div>
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="w-full text-left">
+          <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase font-bold">
             <tr>
-              <th class="p-4 text-left">Producto</th>
-              <th class="p-4 text-left">Precio/Stock</th>
-              <th class="p-4 text-left">Categoría / Sub</th>
+              <th (click)="ordenar('nombre')" class="p-4 cursor-pointer">Nombre @if(columnaOrden()==='nombre'){<span>{{ordenAsc()?'▲':'▼'}}</span>}</th>
+              <th (click)="ordenar('precio')" class="p-4 cursor-pointer">Precio @if(columnaOrden()==='precio'){<span>{{ordenAsc()?'▲':'▼'}}</span>}</th>
+              <th class="p-4">Stock</th>
+              <th class="p-4">Categoría</th>
               <th class="p-4 text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
+          <tbody class="divide-y">
             @for (p of productos(); track p.id) {
-              <tr class="hover:bg-green-50/30 transition-all">
-                <td class="p-4 font-bold text-green-900">{{ p.nombre }} <p class="text-[10px] font-normal text-gray-400">{{p.descripcion}}</p></td>
-                <td class="p-4">
-                  <span class="text-green-700 font-black block">${{ p.precio }}</span>
-                  <span class="text-xs text-gray-500">{{ p.stock }} unidades</span>
-                </td>
-                <td class="p-4 uppercase text-[9px] font-black">
-                  <span class="bg-gray-100 px-2 py-1 rounded">{{ p.categoria }}</span>
-                  @if (p.subcategoria) { <span class="mx-1 text-gray-300">/</span> <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">{{ p.subcategoria }}</span> }
-                </td>
+              <tr class="hover:bg-gray-50">
+                <td class="p-4 font-bold text-green-900">{{p.nombre}}</td>
+                <td class="p-4 text-green-700 font-black">${{p.precio}}</td>
+                <td class="p-4" [class.text-red-500]="p.stock < 5">{{p.stock}} un.</td>
+                <td class="p-4 text-[9px] font-black uppercase"><span class="bg-gray-100 p-1 rounded">{{p.categoria}}</span></td>
                 <td class="p-4 text-right">
-                  <button (click)="abrirEditarProd(p)" class="text-blue-500 hover:text-blue-700 font-bold text-[10px] mr-4 uppercase">Editar</button>
-                  <button (click)="eliminarProd(p.id)" class="text-red-400 hover:text-red-600 font-bold text-[10px] uppercase">Borrar</button>
+                  <button (click)="abrirEditarProd(p)" class="text-blue-500 font-bold text-[10px] mr-2">EDITAR</button>
+                  <button (click)="eliminarProd(p.id)" class="text-red-400 font-bold text-[10px]">BORRAR</button>
                 </td>
               </tr>
             }
@@ -51,105 +53,176 @@
       </div>
     }
 
-    @if (vistaActual() === 'maestros') {
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-bottom-4 duration-300">
-        
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-800">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="font-black text-gray-700 uppercase italic">Categorías Principales</h3>
-            <button (click)="modalCat.set(true)" class="bg-green-800 text-yellow-400 px-4 py-1 rounded font-bold text-[10px] uppercase">+ Añadir</button>
-          </div>
-          <div class="space-y-2">
-            @for (c of categorias(); track c.id) {
-              <div class="flex justify-between items-center p-3 bg-gray-50 rounded hover:bg-gray-100 transition-all">
-                <span class="font-bold text-green-900">{{c.nombre}}</span>
-                <button (click)="eliminarCat(c.id)" class="text-red-300 hover:text-red-500 text-xs font-bold">ELIMINAR</button>
-              </div>
-            }
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-yellow-500">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="font-black text-gray-700 uppercase italic">Subcategorías</h3>
-            <button (click)="modalSub.set(true)" class="bg-yellow-500 text-white px-4 py-1 rounded font-bold text-[10px] uppercase">+ Añadir</button>
-          </div>
-          <div class="space-y-2">
-            @for (s of subcategoriasTotales(); track s.id) {
-              <div class="flex justify-between items-center p-3 bg-gray-50 rounded hover:bg-gray-100 transition-all border-l-4 border-yellow-500">
-                <div>
-                  <span class="font-bold text-gray-800 block leading-none">{{s.nombre}}</span>
-                  <span class="text-[9px] uppercase text-gray-400">Padre: {{s.categoriaPadre}}</span>
-                </div>
-                <button (click)="eliminarSub(s.id)" class="text-red-300 hover:text-red-500 text-xs font-bold">ELIMINAR</button>
-              </div>
-            }
-          </div>
-        </div>
-
-      </div>
-    }
-  </main>
-
-  @if (modalProd()) {
-    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in duration-200">
-        <div class="bg-green-800 p-4 text-yellow-400 font-black uppercase italic flex justify-between">
-          <span>{{ esEdicion() ? 'Editar' : 'Nuevo' }} Producto</span>
-          <button (click)="modalProd.set(false)" class="text-white">✕</button>
-        </div>
-        <div class="p-6 space-y-4">
-          <input [(ngModel)]="formProd().nombre" placeholder="Nombre *" class="w-full border-b-2 p-2 outline-none font-bold">
-          <div class="grid grid-cols-2 gap-4">
-            <input type="number" [(ngModel)]="formProd().precio" placeholder="Precio *" class="w-full border-b-2 p-2 outline-none">
-            <input type="number" [(ngModel)]="formProd().stock" placeholder="Stock *" class="w-full border-b-2 p-2 outline-none">
-          </div>
-          <select [ngModel]="formProd().categoriaId" (change)="cambioCatProd($event)" class="w-full border-b-2 p-2 bg-white outline-none font-bold">
-            <option [value]="null" disabled>1. Categoría Principal...</option>
-            @for (c of categorias(); track c.id) { <option [value]="c.id">{{c.nombre}}</option> }
-          </select>
-          @if (subcategoriasFiltradas().length > 0) {
-            <select [(ngModel)]="formProd().subcategoriaId" class="w-full border-b-2 p-2 bg-white outline-none font-bold animate-in slide-in-from-top-2">
-              <option [value]="null" disabled>2. Subcategoría...</option>
-              @for (s of subcategoriasFiltradas(); track s.id) { <option [value]="s.id">{{s.nombre}}</option> }
-            </select>
+    @if (vistaActual() === 'comprar') {
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 h-fit">
+          @for (p of productosParaVenta(); track p.id) {
+            <div class="bg-white p-4 rounded-xl shadow border flex justify-between items-center">
+              <div><h4 class="font-black text-green-900 uppercase italic">{{p.nombre}}</h4><p class="text-xs text-gray-500">${{p.precio}} | Stock: {{p.stock}}</p></div>
+              <button (click)="agregarAlCarrito(p)" class="bg-green-800 text-white w-10 h-10 rounded-full font-bold">＋</button>
+            </div>
           }
         </div>
-        <div class="bg-gray-50 p-4 flex justify-end gap-3">
-          <button (click)="modalProd.set(false)" class="text-gray-400 font-bold uppercase text-[10px]">Cerrar</button>
-          <button (click)="guardarProd()" class="bg-green-800 text-yellow-400 px-8 py-2 rounded-lg font-black uppercase text-xs">Guardar</button>
+        <div class="bg-white p-6 rounded-2xl shadow-xl border-t-8 border-green-800 sticky top-24">
+          <h3 class="font-black uppercase mb-4 text-gray-600">🛒 Tu Carrito</h3>
+          <div class="space-y-2 mb-6 max-h-60 overflow-y-auto">
+            @for (i of carrito(); track i.productoId) {
+              <div class="flex justify-between text-xs border-b pb-2">
+                <span>{{i.cantidad}}x {{i.nombre}}</span>
+                <span class="font-bold">${{i.precio * i.cantidad}} <button (click)="quitarDelCarrito(i.productoId)" class="ml-2 text-red-400">✕</button></span>
+              </div>
+            } @empty { <p class="text-center text-gray-400 italic">Vacío</p> }
+          </div>
+          <div class="text-xl font-black text-green-900 flex justify-between border-t pt-4"><span>TOTAL:</span><span>${{totalCarrito()}}</span></div>
+          <button (click)="finalizarVenta()" [disabled]="carrito().length === 0" class="w-full bg-green-800 text-yellow-400 py-3 rounded-xl font-black uppercase mt-4 disabled:bg-gray-200">Confirmar</button>
         </div>
+      </div>
+    }
+
+    @if (vistaActual() === 'ventas') {
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase font-bold">
+            <tr><th class="p-4">Ticket</th><th class="p-4">Fecha</th><th class="p-4">Total</th><th class="p-4 text-center">Detalle</th></tr>
+          </thead>
+          <tbody class="divide-y">
+            @for (t of tickets(); track t.id) {
+              <tr>
+                <td class="p-4 text-gray-400 font-bold">#{{t.id}}</td>
+                <td class="p-4 text-xs">{{t.fechaEmision | date:'dd/MM/yyyy HH:mm'}}</td>
+                <td class="p-4 font-black text-green-700">${{t.precioTotal}}</td>
+                <td class="p-4 text-center"><button (click)="modalDetalleTicket.set(t)" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold">VER PRODUCTOS</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (vistaActual() === 'maestros') {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white p-6 rounded-xl shadow border-t-4 border-green-800">
+          <div class="flex justify-between mb-4"><h3 class="font-black uppercase italic">Categorías</h3><button (click)="modalCat.set(true)" class="text-green-800 font-bold text-xs">+ AÑADIR</button></div>
+          @for (c of categorias(); track c.id) { <div class="flex justify-between p-2 bg-gray-50 rounded mb-1 text-sm"><span>{{c.nombre}}</span><button (click)="eliminarCat(c.id)" class="text-red-300">✕</button></div> }
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow border-t-4 border-yellow-500">
+          <div class="flex justify-between mb-4"><h3 class="font-black uppercase italic">Subcategorías</h3><button (click)="modalSub.set(true)" class="text-yellow-600 font-bold text-xs">+ AÑADIR</button></div>
+          @for (s of subcategoriasTotales(); track s.id) { <div class="flex justify-between p-2 bg-gray-50 rounded mb-1 text-sm"><span>{{s.nombre}} <small class="text-gray-400">({{s.categoriaPadre}})</small></span><button (click)="eliminarSub(s.id)" class="text-red-300">✕</button></div> }
+        </div>
+      </div>
+    }
+
+  </main>
+
+  @if (modalDetalleTicket()) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl animate-in zoom-in border-t-8 border-blue-600 overflow-hidden">
+        <div class="p-6">
+          <h3 class="font-black text-xl mb-4">Ticket #{{modalDetalleTicket().id}}</h3>
+          <div class="space-y-2 mb-6">
+            @for (i of modalDetalleTicket().detalles; track i.nombreProducto) {
+              <div class="flex justify-between text-sm border-b pb-1">
+                <span>{{i.cantidad}}x {{i.nombreProducto}}</span>
+                <span class="font-bold">${{i.subtotal}}</span>
+              </div>
+            }
+          </div>
+          <div class="flex justify-between font-black text-blue-900"><span>TOTAL:</span><span>${{modalDetalleTicket().precioTotal}}</span></div>
+        </div>
+        <button (click)="modalDetalleTicket.set(null)" class="w-full bg-gray-100 py-3 font-bold text-xs text-gray-500 uppercase">Cerrar</button>
       </div>
     </div>
   }
 
-  @if (modalCat()) {
-    <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[200] p-4">
-      <div class="bg-white rounded-xl p-6 w-full max-w-xs shadow-2xl animate-in zoom-in">
-        <h3 class="font-black text-green-900 uppercase italic mb-4">Nueva Categoría</h3>
-        <input [(ngModel)]="formCat().nombre" placeholder="Nombre Categoría..." class="w-full border-b-2 p-2 outline-none font-bold mb-6">
-        <div class="flex justify-end gap-3">
-          <button (click)="modalCat.set(false)" class="text-gray-400 text-[10px] font-bold">CANCELAR</button>
-          <button (click)="guardarCat()" class="bg-green-800 text-yellow-400 px-4 py-2 rounded font-black text-[10px]">CREAR</button>
+  @if (modalProd()) {
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in duration-150">
+      <div class="bg-green-800 p-4 text-yellow-400 font-black uppercase italic flex justify-between">
+        <span>{{ esEdicion() ? 'Editar' : 'Nuevo' }} Producto</span>
+        <button (click)="modalProd.set(false)" class="text-white">✕</button>
+      </div>
+      
+      <div class="p-6 space-y-4">
+        <input [(ngModel)]="formProd().nombre" placeholder="Nombre del producto" class="w-full border-b-2 p-2 outline-none font-bold">
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <label class="text-[9px] font-black text-gray-400 uppercase">Precio</label>
+            <input type="number" [(ngModel)]="formProd().precio" class="border-b-2 p-2 outline-none font-bold">
+          </div>
+          <div class="flex flex-col">
+            <label class="text-[9px] font-black text-gray-400 uppercase">Stock</label>
+            <input type="number" [(ngModel)]="formProd().stock" class="border-b-2 p-2 outline-none font-bold">
+          </div>
         </div>
+
+        <div class="flex flex-col">
+          <label class="text-[9px] font-black text-gray-400 uppercase">Categoría</label>
+          <select [ngModel]="formProd().categoriaId" (change)="cambioCatProd($event)" class="w-full border-b-2 p-2 bg-white outline-none font-bold">
+            <option [value]="null" disabled>Seleccionar...</option>
+            @for (c of categorias(); track c.id) {
+              <option [value]="c.id">{{c.nombre}}</option>
+            }
+          </select>
+        </div>
+
+        @if (subcategoriasFiltradas().length > 0) {
+          <div class="flex flex-col animate-in slide-in-from-top-2">
+            <label class="text-[9px] font-black text-gray-400 uppercase">Subcategoría</label>
+            <select [(ngModel)]="formProd().subcategoriaId" class="w-full border-b-2 p-2 bg-white outline-none font-bold">
+              <option [value]="null">Ninguna</option>
+              @for (s of subcategoriasFiltradas(); track s.id) {
+                <option [value]="s.id">{{s.nombre}}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+
+      <div class="p-4 bg-gray-50 flex justify-end gap-3">
+        <button (click)="modalProd.set(false)" class="text-gray-400 font-bold text-xs uppercase hover:text-gray-600">Cancelar</button>
+        <button (click)="guardarProd()" class="bg-green-800 text-yellow-400 px-8 py-2 rounded-xl font-black text-xs uppercase shadow-lg hover:bg-green-700 transition-all">
+          Guardar Producto
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+  @if (modalCat()) {
+    <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[200]">
+      <div class="bg-white p-6 rounded-xl w-full max-w-xs shadow-2xl">
+        <h3 class="font-black uppercase italic mb-4">Nueva Categoría</h3>
+        <input [(ngModel)]="formCat().nombre" class="w-full border-b-2 p-2 mb-6" placeholder="Nombre...">
+        <button (click)="guardarCat()" class="w-full bg-green-800 text-yellow-400 py-2 rounded font-black text-xs">CREAR</button>
       </div>
     </div>
   }
 
   @if (modalSub()) {
-    <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[200] p-4">
-      <div class="bg-white rounded-xl p-6 w-full max-w-xs shadow-2xl animate-in zoom-in">
-        <h3 class="font-black text-yellow-600 uppercase italic mb-4">Nueva Subcategoría</h3>
-        <input [(ngModel)]="formSub().nombre" placeholder="Nombre Sub..." class="w-full border-b-2 p-2 outline-none font-bold mb-4">
-        <select [(ngModel)]="formSub().categoriaId" class="w-full border-b-2 p-2 bg-white outline-none font-bold mb-6">
-          <option [value]="null" disabled>Elegir Padre...</option>
-          @for (c of categorias(); track c.id) { <option [value]="c.id">{{c.nombre}}</option> }
-        </select>
-        <div class="flex justify-end gap-3">
-          <button (click)="modalSub.set(false)" class="text-gray-400 text-[10px] font-bold">CANCELAR</button>
-          <button (click)="guardarSub()" class="bg-yellow-500 text-white px-4 py-2 rounded font-black text-[10px]">CREAR</button>
-        </div>
+  <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[200]">
+    <div class="bg-white p-6 rounded-xl w-full max-w-xs shadow-2xl">
+      <h3 class="font-black uppercase italic mb-4 text-yellow-600">Nueva Subcategoría</h3>
+      
+      <input [(ngModel)]="formSub().nombre" class="w-full border-b-2 p-2 mb-4 outline-none" placeholder="Nombre...">
+      
+      <select [(ngModel)]="formSub().categoriaId" class="w-full border-b-2 p-2 mb-6 bg-white outline-none font-bold">
+        <option [value]="null" disabled selected>Seleccione una categoría...</option>
+        @for (c of categorias(); track c.id) {
+          <option [value]="c.id">{{c.nombre}}</option>
+        }
+      </select>
+
+      <div class="flex flex-col gap-2">
+        <button (click)="guardarSub()" class="w-full bg-yellow-500 text-white py-2 rounded font-black text-xs uppercase shadow-md">
+          Crear Subcategoría
+        </button>
+        <button (click)="modalSub.set(false)" class="w-full text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+          Cancelar
+        </button>
       </div>
     </div>
-  }
+  </div>
+}
+
 </div>
